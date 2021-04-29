@@ -1,7 +1,19 @@
-# Exercício  
+# API Escola Alf
 
 ## Do que se trara:
 Uma API http simples feita em python utilizando o framework Flask e banco de dados MySQL.
+
+## Rotas
+### Escola:
+
+* *****POST***: /school/student?token={token}**: cadastra um novo aluno.
+* *****GET***: /school/students?token={token}**: retorna todos os alunos matriculados.
+* *****POST***: /school/exam?token={token}**: cadastra uma nova prova.
+* *****GET***: /school/exams?token={token}**: retorna todos as provas cadastradas.
+### Aluno:
+* *****GET***: /student/{matricula}/exams**: retorna todas as provas do aluno.
+* *****GET***: /student/{matricula}/exam/{id}**: retorna todas as questões e alternativas da prova do aluno.
+* *****POST***: /student/{matricula}/exam**: cadastra as repostas do aluno (realiza a prova).
 
 ## Descrição do exercício:
 Escola:  
@@ -25,12 +37,12 @@ Ex:
 {
 	"Nome" :"Ciências - Reprodução humana", 
 	"1": {
-		"Alternativas": ["A", "B", "C"]
+		"Alternativas": ["A", "B", "C"],
 		"Resposta correta": "A",
 		"Peso": 5
     },
 	"2": {
-		"Alternativas": ["A", "B", "C"]
+		"Alternativas": ["A", "B", "C"],
 		"Resposta correta": "C",
 		"Peso": 5
     }	
@@ -44,11 +56,11 @@ O aluno precisa selecionar uma prova para fazer
 Ao fazer a prova, o aluno poderá "assinalar" somente uma alternativa por questão da prova.
 
 **Rotas Aluno:**    
-* Para acessar qualquer uma das rotas, o aluno deverá usar seu número de matricula.
+Para acessar qualquer uma das rotas, o aluno deverá usar seu número de matricula.
 * Ter uma rota onde é possível listar todas as provas (Somente mostrar o id e o nome da prova na listagem)
 * Ter uma rota onde o aluno coloque o id da prova e liste todas as questões e alternativas da prova.  
 Ex de retorno:  
-1 - A, B, C
+1 - A, B, C  
 2 - 1, 2, 3, 4, 5  
 Não será necessário mostrar um enunciado para as questões.
 
