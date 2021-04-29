@@ -1,4 +1,13 @@
 from pymongo import MongoClient
 
-# Cria a conexão com o DB:
-conn = MongoClient("mongodb://localhost:27017/")
+
+class Banco:
+
+    def __init__(self):
+        # Create a conection with mongodb:
+        self.__conn = MongoClient(host="localhost", port=27017)
+        self.__db = self.__conn.alf_db  # create db.
+
+        # Creates collections for students and exams:
+        self.student = self.__db.student
+        self.exam = self.__db.exam
