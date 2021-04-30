@@ -155,7 +155,7 @@ def get_school_exams_answers():
         return "Error: access token was not provided!", 400
 
     try:
-        result_data = dumps(db.exam_answers.find({}, {"_id": 0}))
+        result_data = dumps(db.exam.find({}, {"_id": 0}))
         return result_data, 200
     except:
         return "Error: Internal server error!", 500
@@ -182,16 +182,15 @@ def create_exam():
         return f"Error: invalid body request!{exam_is_valid_test[0]}", 400
 
     # Exam answers information:
-    exam_answers = body_request.copy()
-    exam_answers.pop("access_token")
-    exam_answers['id_answers'] = id_answers
+    exam = body_request.copy()
+    exam.pop("access_token")
 
     try:
         # Save the exam answers:
-        db.exam_answers.insert_one(exam_answers)
+        db.exam.insert_one(exam)
 
-        exam_answers.pop('_id')
-        return exam_answers, 200
+        exam.pop('_id')
+        return exam, 200
     except:
         return "Error: Internal server erro!", 500
 

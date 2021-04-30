@@ -10,5 +10,4 @@ class Banco:
 
         # Creates collections for students and exams:
         self.student = self.__db.student
-        self.exam_answers = self.__db.exam_answers
         self.exam = self.__db.exam
