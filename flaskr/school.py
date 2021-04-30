@@ -95,19 +95,109 @@ def get_students():
 # POST: /school/student: cadastra um novo aluno.
 @app.route("/school/student", methods=['POST'])
 def create_student():
-    pass
+    # Get body request:
+    raw_request = request.data.decode('utf-8')
+    body_request = loads(raw_request)
+
+    # Checks if access token was privided or valid:
+    try:
+        token = str(body_request['access_token'])
+        if token != access_token:
+            return "Error: invalid access token!"
+    except:
+        return "Error: access token was not provided!", 400
+
+    # Cheks was body request is valid:
+    expected = ['access_token', 'name', 'born']
+    if not body_request_is_valid(list(body_request.keys()), expected):
+        return "Error: invalid body request!", 400
+
+    # Generate registration number:
+    while True:
+        reg = generate_registration()
+        # Checks was registration number exists in db:
+        consult = db.student.find({"registration": reg}, {})
+        if dumps(consult) == '[]':
+            break
+
+    # Get the student information save:
+    student = dict(
+        name=body_request['name'],
+        born=convert_str_to_iso_date(body_request['born']),
+        registration=reg
+    )
+
+    # Save studant:
+    try:
+        db.student.insert_one(student)
+        student.pop('_id')
+        return student, 200
+    except:
+        return "Error: Internal server error!", 500
 
 
 # GET: /school/exams: retorna todos as provas cadastradas.
 @app.route("/school/exams", methods=['GET'])
-def get_school_exams():
-    pass
+def get_school_exams_answers():
+    # Get body request:
+    raw_request = request.data.decode('utf-8')
+    body_request = loads(raw_request)
+
+    # Checks if access token was privided or valid:
+    try:
+        token = str(body_request['access_token'])
+        if token != access_token:
+            return "Error: invalid access token!"
+    except:
+        return "Error: access token was not provided!", 400
+
+    try:
+        result_data = dumps(db.exam_answers.find({}, {"_id": 0}))
+        return result_data, 200
+    except:
+        return "Error: Internal server error!", 500
 
 
 # POST: /school/exam: cadastra uma nova prova.
 @app.route("/school/exam", methods=['POST'])
 def create_exam():
-    pass
+    # Get body request:
+    raw_request = request.data.decode('utf-8')
+    body_request = loads(raw_request)
+
+    # Checks if access token was privided or valid:
+    try:
+        token = str(body_request['access_token'])
+        if token != access_token:
+            return "Error: invalid access token!", 400
+    except:
+        return "Error: access token was not provided!", 400
+
+    # Cheks was body request (exam) is valid:
+    if not exam_is_valid(body_request):
+        return "Error: invalid body request! Ckecks the exam information.", 400
+
+    # Generate the exam answer id number:
+    while True:
+        id_answers = int(f"{randint(1, 9)}{randint(1, 99)}{randint(1, 9)}")
+        # Checks was number exists in db:
+        consult = db.exam_answers.find({"id_answers": id_answers}, {})
+        if dumps(consult) == '[]':
+            break
+
+    # Exam answers information:
+    exam_answers = body_request.copy()
+    exam_answers.pop("access_token")
+    exam_answers['id_answers'] = id_answers
+
+    try:
+        # Save the exam answers:
+        db.exam_answers.insert_one(exam_answers)
+
+        exam_answers.pop('_id')
+        return exam_answers, 200
+    except:
+        return "Error: Internal server erro!", 500
 
 
 # ---- ALUNO: ----
