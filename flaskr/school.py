@@ -76,16 +76,20 @@ def get_students():
     # Get body request:
     raw_request = request.data.decode('utf-8')
     body_request = loads(raw_request)
-    token = str(body_request['access_token'])
 
-    # Check if access token was privded or valid:
-    if not token:
+    # Checks if access token was privided or valid:
+    try:
+        token = str(body_request['access_token'])
+        if token != access_token:
+            return "Error: invalid access token!"
+    except:
         return "Error: access token was not provided!", 400
-    elif token != access_token:
-        return "Error: invalid access token!"
 
-    result_data = dumps(db.student.find({}, {"_id": 0}))
-    return result_data
+    try:
+        result_data = dumps(db.student.find({}, {"_id": 0}))
+        return result_data
+    except:
+        return "Error: Invalid body request!", 500
 
 
 # POST: /school/student: cadastra um novo aluno.
