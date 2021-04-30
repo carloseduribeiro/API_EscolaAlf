@@ -1,4 +1,4 @@
-from datetime import date, time
+from datetime import date
 from random import randint
 
 from bson.json_util import dumps, loads
@@ -7,11 +7,58 @@ from flask import Flask, request
 from db import Banco
 
 
+# Generate a number registration and return:
 def generate_registration() -> int:
+    # Format: YYYY|Year period (10/20)|Random (4 digits)
     reg_result = date.today().strftime('%y')
     reg_result += str(10 if date.today().month <= 6 else 20)
-    reg_result += str(randint(1, 9999))
+    reg_result += f"{str(randint(1, 999)) + str(randint(1, 9)):0>4}"
     return int(reg_result)
+
+
+# Convert a string date to iso format (YYYY-MM-DD):
+def convert_str_to_iso_date(current: str) -> str:
+    final = current.split('/') if '/' in current else current.split('-')
+    if len(final[0]) == 2:
+        final.reverse()
+    return '-'.join(final)
+
+
+# Checks whether the body request keys is as expected:
+def body_request_is_valid(current_keys: list, expected: list) -> bool:
+    expected.sort()
+    current_keys.sort()
+    return False if current_keys != expected else True
+
+
+def exam_is_valid(body_request: dict) -> bool:
+    exam = body_request.copy()
+    # Remove other keys:
+    exam.pop("name")
+    exam.pop("access_token")
+
+    # Checks the number of questions:
+    if len(exam.keys()) > 20 or len(exam.keys()) == 20:
+        return False
+
+    total_weight = 0.0
+    for num, quest in exam.items():
+        # Checks if de number str have a integer:
+        try:
+            int(num)
+        except ValueError:
+            return False
+
+        # Checks if the answer is in the list of alternatives:
+        if quest['answer'] not in quest['alternatives']:
+            return False
+
+        total_weight += quest['weight']
+
+    # Checks if total weight is 10:
+    if total_weight != 10.0:
+        return False
+    return True
 
 
 app = Flask("__name__")
