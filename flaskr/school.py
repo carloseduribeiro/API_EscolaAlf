@@ -31,7 +31,7 @@ def body_request_is_valid(current_keys: list, expected: list) -> bool:
     return False if current_keys != expected else True
 
 
-def exam_is_valid(body_request: dict) -> bool:
+def exam_is_valid(body_request: dict) -> tuple:
     exam = body_request.copy()
     # Remove other keys:
     exam.pop("name")
@@ -39,7 +39,7 @@ def exam_is_valid(body_request: dict) -> bool:
 
     # Checks the number of questions:
     if len(exam.keys()) > 20 or len(exam.keys()) == 20:
-        return False
+        return "Message: The number of questions is invalid.", False
 
     total_weight = 0.0
     for num, quest in exam.items():
@@ -47,18 +47,21 @@ def exam_is_valid(body_request: dict) -> bool:
         try:
             int(num)
         except ValueError:
-            return False
+            return "Message: The question number must be numeric.", False
 
         # Checks if the answer is in the list of alternatives:
         if quest['answer'] not in quest['alternatives']:
-            return False
+            return f"Message: The answer of question '{num}' not exists in the alternatives.", False
+
+        if quest['weight'] == 0:
+            return f"Message: The weight of question '{num}' must be greater than 0.", False
 
         total_weight += quest['weight']
 
     # Checks if total weight is 10:
     if total_weight != 10.0:
-        return False
-    return True
+        return f"Message: The sum of the weights must be equal to ten.", False
+    return "", True
 
 
 app = Flask("__name__")
@@ -174,16 +177,9 @@ def create_exam():
         return "Error: access token was not provided!", 400
 
     # Cheks was body request (exam) is valid:
-    if not exam_is_valid(body_request):
-        return "Error: invalid body request! Ckecks the exam information.", 400
-
-    # Generate the exam answer id number:
-    while True:
-        id_answers = int(f"{randint(1, 9)}{randint(1, 99)}{randint(1, 9)}")
-        # Checks was number exists in db:
-        consult = db.exam_answers.find({"id_answers": id_answers}, {})
-        if dumps(consult) == '[]':
-            break
+    exam_is_valid_test = exam_is_valid(body_request)
+    if not exam_is_valid_test[1]:
+        return f"Error: invalid body request!{exam_is_valid_test[0]}", 400
 
     # Exam answers information:
     exam_answers = body_request.copy()
